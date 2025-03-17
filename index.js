@@ -18,7 +18,7 @@ app.use(express.json());
 
 
 const corsOptions = {
-    origin: ['http://localhost:8000','http://localhost:3000', 'http://localhost:4000'], 
+    origin: ['http://localhost:8000','https://server-lozada-blog-post-api.onrender.com/','http://localhost:3000', 'http://localhost:4000'], 
     credentials: true, 
     optionsSuccessStatus: 200 
 };
