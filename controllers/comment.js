@@ -78,16 +78,41 @@ module.exports.deleteComment = async (req, res) => {
 };
 
 // [POST] Reply to a comment
+// module.exports.replyToComment = async (req, res) => {
+//     try {
+//         const { commentId } = req.params;
+//         const { text } = req.body;
+//         const userId = req.user.id;
+
+//         const parentComment = await Comment.findById(commentId);
+//         if (!parentComment) return res.status(404).json({ message: "Comment not found" });
+
+//         // Add reply as an embedded document (correct schema)
+//         parentComment.replies.push({
+//             userId: userId,
+//             commentText: text,
+//             createdAt: new Date()
+//         });
+
+//         await parentComment.save();
+
+//         res.status(201).json({ message: "Reply added successfully", replies: parentComment.replies });
+//     } catch (error) {
+//         res.status(500).json({ message: "Internal server error", error: error.message });
+//     }
+// };
+
+// [POST] Reply to a comment
 module.exports.replyToComment = async (req, res) => {
     try {
         const { commentId } = req.params;
         const { text } = req.body;
         const userId = req.user.id;
 
-        const parentComment = await Comment.findById(commentId);
+        const parentComment = await Comment.findById(commentId).populate('replies.userId', 'firstName lastName'); // Populate userId for replies
         if (!parentComment) return res.status(404).json({ message: "Comment not found" });
 
-        // Add reply as an embedded document (correct schema)
+        // Add reply as an embedded document
         parentComment.replies.push({
             userId: userId,
             commentText: text,
@@ -96,10 +121,11 @@ module.exports.replyToComment = async (req, res) => {
 
         await parentComment.save();
 
-        res.status(201).json({ message: "Reply added successfully", replies: parentComment.replies });
+        // Return the populated replies with user data
+        const populatedReplies = await Comment.findById(commentId).populate('replies.userId', 'firstName lastName');
+        res.status(201).json({ message: "Reply added successfully", replies: populatedReplies.replies });
     } catch (error) {
         res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
-
 
