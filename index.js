@@ -18,10 +18,15 @@ app.use(express.json());
 
 
 const corsOptions = {
-    origin: ['http://localhost:8000','https://server-lozada-blog-post-api.onrender.com/','http://localhost:3000', 'http://localhost:4000'], 
-    credentials: true, 
-    optionsSuccessStatus: 200 
+    origin: [
+        'http://localhost:3000',  // Local development
+        'https://client-my-blog-post-lozada.vercel.app',  // Production (Vercel)
+        'https://server-lozada-blog-post-api.onrender.com' // If necessary
+    ],
+    credentials: true,  // Allow cookies and headers
+    optionsSuccessStatus: 200 // For legacy browser support
 };
+
 
 app.use(cors(corsOptions));
 
