@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const User = require('./User'); // Import the User model
 
 const commentSchema = new mongoose.Schema({
     postId: {
@@ -18,6 +19,7 @@ const commentSchema = new mongoose.Schema({
     replies: [
         {
             userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            fullName: { type: String }, // Full name stored here
             commentText: { type: String, required: true },
             createdAt: { type: Date, default: Date.now }
         }
@@ -31,10 +33,30 @@ const commentSchema = new mongoose.Schema({
     }
 });
 
-// Auto-update `updatedAt` when a comment is modified
-commentSchema.pre('save', function (next) {
+// Pre-save middleware to auto-update `updatedAt`
+commentSchema.pre('save', async function (next) {
     if (this.isModified('commentText')) {
         this.updatedAt = Date.now();
+    }
+    next();
+});
+
+// Pre-save middleware for replies to auto-fill the fullName
+commentSchema.pre('save', async function (next) {
+    if (this.isModified('replies') && this.replies.length > 0) {
+        // Loop through the replies and populate the fullName before saving
+        for (const reply of this.replies) {
+            if (reply.userId) {
+                try {
+                    const user = await User.findById(reply.userId); // Fetch user details
+                    if (user) {
+                        reply.fullName = `${user.firstName} ${user.lastName}`; // Set full name
+                    }
+                } catch (err) {
+                    return next(err); // Handle error if user not found
+                }
+            }
+        }
     }
     next();
 });
